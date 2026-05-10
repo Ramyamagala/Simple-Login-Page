@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Secure Login | Phone OTP Verification</title>
+  <!-- Google Fonts for clean modern typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 (free icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, #f0f5ff 0%, #e9f0fa 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    /* subtle animated background element */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, rgba(99,102,241,0) 70%);
+      border-radius: 50%;
+      top: 10%;
+      left: -5%;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(6,182,212,0.06) 0%, rgba(6,182,212,0) 70%);
+      border-radius: 50%;
+      bottom: 5%;
+      right: -8%;
+      z-index: 0;
+    }
+
+    /* main card container */
+    .login-container {
+      width: 100%;
+      max-width: 460px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(0px);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 8px 18px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: transform 0.2s ease;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .login-card {
+      padding: 2rem 2rem 2.5rem;
+    }
+
+    /* branding / header */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #4f46e5, #0f67fe);
+      width: 60px;
+      height: 60px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+    }
+
+    .brand-icon i {
+      font-size: 30px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e293b, #2d3a5e);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .sub-head {
+      color: #5b6e8c;
+      font-size: 0.9rem;
+      margin-top: 0.45rem;
+      font-weight: 400;
+    }
+
+    /* input group styling */
+    .input-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .input-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: #1e2a44;
+      letter-spacing: -0.2px;
+    }
+
+    .phone-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f8fafd;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 1.2rem;
+      transition: all 0.2s ease;
+      padding: 0.1rem 0.1rem 0.1rem 1rem;
+    }
+
+    .phone-input-wrapper:focus-within {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      background: white;
+    }
+
+    .country-code {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1e293b;
+      background: #eef2f8;
+      padding: 0.3rem 0.6rem;
+      border-radius: 2rem;
+      margin-right: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .country-code i {
+      font-size: 0.8rem;
+      color: #4b5563;
+    }
+
+    .phone-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.85rem 0.2rem 0.85rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      color: #0f172a;
+      font-family: 'Inter', monospace;
+    }
+
+    .phone-input::placeholder {
+      color: #9aa9c1;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    /* otp section (hidden by default) */
+    .otp-section {
+      margin-top: 0.2rem;
+      margin-bottom: 1.8rem;
+      transition: all 0.25s ease;
+    }
+
+    .otp-hidden {
+      display: none;
+    }
+
+    .otp-visible {
+      display: block;
+      animation: fadeSlideUp 0.3s ease-out;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .otp-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f8fafd;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 1.2rem;
+      transition: all 0.2s;
+      padding: 0.1rem 0.8rem;
+    }
+
+    .otp-input-wrapper:focus-within {
+      border-color: #0f67fe;
+      box-shadow: 0 0 0 3px rgba(15, 103, 254, 0.15);
+      background: white;
+    }
+
+    .otp-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.85rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      font-family: 'Inter', monospace;
+      letter-spacing: 1px;
+    }
+
+    .timer-text {
+      font-size: 0.75rem;
+      color: #5b6e8c;
+      margin-top: 0.5rem;
+      margin-left: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* buttons */
+    .btn {
+      width: 100%;
+      padding: 0.9rem 0;
+      border-radius: 3rem;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #4f46e5, #6366f1);
+      color: white;
+      box-shadow: 0 8px 18px -8px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: linear-gradient(95deg, #4338ca, #4f46e5);
+      box-shadow: 0 12px 22px -10px rgba(79, 70, 229, 0.5);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #cbd5e1;
+      color: #334155;
+      margin-top: 0.75rem;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+
+    /* status messages */
+    .message-area {
+      margin: 1rem 0 0.25rem;
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.4rem;
+      border-radius: 2rem;
+      font-weight: 500;
+    }
+
+    .error-message {
+      color: #e11d48;
+      background: #ffe4e8;
+    }
+
+    .success-message {
+      color: #0f7b3a;
+      background: #e0f2e9;
+    }
+
+    .info-message {
+      color: #1e40af;
+      background: #e0edff;
+    }
+
+    hr {
+      margin: 1.2rem 0 0.8rem;
+      border: none;
+      border-top: 1px solid #eef2f8;
+    }
+
+    .demo-hint {
+      font-size: 0.7rem;
+      text-align: center;
+      color: #6c7a91;
+      margin-top: 1rem;
+      background: #f9fafc;
+      padding: 0.5rem;
+      border-radius: 1rem;
+    }
+
+    .demo-hint i {
+      font-size: 0.7rem;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #8192aa;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 1.5rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      .btn {
+        padding: 0.75rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="login-container">
+  <div class="login-card">
+    <div class="brand-header">
+      <div class="brand-icon">
+        <i class="fas fa-key"></i>
+      </div>
+      <h1>Welcome back</h1>
+      <div class="sub-head">Sign in with your phone number</div>
+    </div>
+
+    <!-- phone number field -->
+    <div class="input-group">
+      <label class="input-label" for="phoneNumber"><i class="fas fa-mobile-alt" style="margin-right: 6px;"></i> Phone number</label>
+      <div class="phone-input-wrapper">
+        <span class="country-code"><i class="fas fa-flag-usa"></i> +1</span>
+        <input type="tel" id="phoneNumber" class="phone-input" placeholder="(555) 000-0000" autocomplete="tel" maxlength="15" value="">
+      </div>
+    </div>
+
+    <!-- dynamic OTP section - appears after send OTP -->
+    <div id="otpSection" class="otp-section otp-hidden">
+      <label class="input-label" for="otpCode"><i class="fas fa-lock"></i> Verification code (OTP)</label>
+      <div class="otp-input-wrapper">
+        <i class="fas fa-envelope-open-text" style="color:#8596b5; margin-right: 8px;"></i>
+        <input type="text" id="otpCode" class="otp-input" placeholder="Enter 6-digit code" maxlength="6" autocomplete="off">
+      </div>
+      <div id="timerDisplay" class="timer-text">
+        <i class="fas fa-hourglass-half"></i> <span id="countdownText">Code expires in 60s</span>
+      </div>
+    </div>
+
+    <!-- primary action button (dynamic label) -->
+    <button id="primaryBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> <span id="btnText">Send OTP</span></button>
+
+    <!-- secondary reset / re-send (hidden until OTP mode) -->
+    <button id="resendOtpBtn" class="btn btn-outline" style="display: none;"><i class="fas fa-rotate-right"></i> Resend OTP</button>
+
+    <!-- message container for status/validation -->
+    <div id="statusMessage" class="message-area"></div>
+    
+    <div class="demo-hint">
+      <i class="fas fa-flask"></i> Demo mode: any phone number works • OTP = <strong>123456</strong> (fixed for testing)
+    </div>
+    <footer>
+      <i class="far fa-shield-alt"></i> OTP verification via demo
+    </footer>
+  </div>
+</div>
+
+<script>
+  // ---------- DOM elements ----------
+  const phoneInput = document.getElementById('phoneNumber');
+  const primaryBtn = document.getElementById('primaryBtn');
+  const btnTextSpan = document.getElementById('btnText');
+  const resendBtn = document.getElementById('resendOtpBtn');
+  const otpSection = document.getElementById('otpSection');
+  const otpCodeInput = document.getElementById('otpCode');
+  const statusDiv = document.getElementById('statusMessage');
+  const countdownSpan = document.getElementById('countdownText');
+
+  // ---------- State variables ----------
+  let isOtpSent = false;            // true = OTP has been sent, waiting for verification
+  let otpTimerInterval = null;
+  let timeLeft = 0;                // seconds remaining for OTP validity
+  let generatedOtp = '';           // store the generated OTP (for demo we use fixed 123456 but also we generate for realism)
+  let currentPhoneNumber = '';     // store phone number used for sending OTP
+  
+  // Helper: display messages (clears after 4 seconds by default)
+  function showMessage(text, type = 'info') {
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : (type === 'success' ? 'check-circle' : 'info-circle')}"></i> ${text}`;
+    statusDiv.className = `message-area ${type === 'error' ? 'error-message' : (type === 'success' ? 'success-message' : 'info-message')}`;
+    // auto clear after 5 seconds unless it's a permanent error but better to clear
+    setTimeout(() => {
+      if (statusDiv.innerHTML.includes(text)) {
+        // avoid clearing if new message appears
+        statusDiv.style.opacity = '0.8';
+        setTimeout(() => {
+          if (statusDiv.innerHTML.includes(text)) {
+            statusDiv.innerHTML = '';
+            statusDiv.className = 'message-area';
+          }
+        }, 200);
+      }
+    }, 4500);
+  }
+
+  // clear timer and reset interval
+  function stopOtpTimer() {
+    if (otpTimerInterval) {
+      clearInterval(otpTimerInterval);
+      otpTimerInterval = null;
+    }
+  }
+
+  // update countdown display and handle expiration
+  function updateCountdownDisplay() {
+    if (timeLeft <= 0) {
+      // OTP expired
+      if (countdownSpan) countdownSpan.innerText = 'Code expired. Request new OTP.';
+      stopOtpTimer();
+      // if OTP expired and still in OTP mode → disable verification, but allow resend
+      if (isOtpSent) {
+        // mark OTP as invalid but keep UI state, just make verify impossible unless resend
+        showMessage('Your OTP has expired. Please resend the code.', 'error');
+        // Disable OTP input visual feedback but we still prevent verify
+        otpCodeInput.disabled = false; // but we will check expiry in verify
+        // Also change primary button behaviour? Currently primary button shows "Verify OTP". We'll disable it if expired? Better to let verify check expiry.
+        // User can click resend button to start fresh.
+      }
+      return;
+    }
+    if (countdownSpan) countdownSpan.innerText = `Code expires in ${timeLeft}s`;
+  }
+  
+  function startOtpTimer(seconds = 60) {
+    stopOtpTimer();
+    timeLeft = seconds;
+    updateCountdownDisplay();
+    otpTimerInterval = setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateCountdownDisplay();
+        if (timeLeft === 0) {
+          // OTP expired
+          showMessage('OTP code has expired. Click "Resend OTP" to get a new code.', 'error');
+          stopOtpTimer();
+          // Optionally, disable any automatic actions, but keep resend active
+        }
+      } else {
+        stopOtpTimer();
+      }
+    }, 1000);
+  }
+
+  // Generate a mock OTP (for this demo we use fixed 123456 but also we can randomize)
+  function generateMockOtp() {
+    // For demo we return same simple OTP, but can be "123456" or random, but consistent with demo hint
+    return '123456';
+  }
+
+  // IMPORTANT: Simulate sending OTP to the user's phone number (mock)
+  // Returns true if successful
+  async function sendOtpToPhone(phoneNumber) {
+    // Basic validation (simple)
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      showMessage('Please enter a valid phone number.', 'error');
+      return false;
+    }
+    // strip any non-digit characters for storing but keep display as is
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+    if (digitsOnly.length < 9) {
+      showMessage('Phone number must contain at least 9 digits.', 'error');
+      return false;
+    }
+    // Simulate network request
+    showMessage(`📲 Sending verification code to ${phoneNumber}...`, 'info');
+    // mock async behavior
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const mockOtp = generateMockOtp();
+    generatedOtp = mockOtp;
+    // In a real app, backend would send SMS; we simulate success.
+    showMessage(`✅ OTP sent successfully to ${phoneNumber} (demo code: ${mockOtp}).`, 'success');
+    // After OTP sent, we store phone for consistency
+    currentPhoneNumber = phoneNumber;
+    return true;
+  }
+
+  // Function to handle OTP verification (checks against generatedOtp)
+  function verifyOtp(userInputOtp) {
+    if (!userInputOtp || userInputOtp.trim() === '') {
+      showMessage('Please enter the 6-digit verification code.', 'error');
+      return false;
+    }
+    // check if OTP expired (timeLeft <=0)
+    if (timeLeft <= 0 && isOtpSent) {
+      showMessage('OTP has expired. Please request a new code via "Resend OTP".', 'error');
+      return false;
+    }
+    const trimmedOtp = userInputOtp.trim();
+    if (trimmedOtp === generatedOtp) {
+      // SUCCESS LOGIN
+      showMessage(`🎉 Login successful! Welcome ${currentPhoneNumber}. Redirecting...`, 'success');
+      // optional: mimic redirect or just reset form with success
+      stopOtpTimer();
+      resetToInitialState(true); // true means soft reset after success
+      // Simulate page change alert / clear
+      setTimeout(() => {
+        alert(`✨ Demo login complete!\nPhone: ${currentPhoneNumber}\nVerified with OTP: ${generatedOtp}`);
+        // full reset after demo login to initial state (keep form clean)
+        resetToInitialState(false);
+      }, 1200);
+      return true;
+    } else {
+      showMessage(`Invalid OTP. The demo OTP is ${generatedOtp}. Try again.`, 'error');
+      return false;
+    }
+  }
+
+  // Completely reset UI to initial phone-only state (keep phone field maybe)
+  function resetToInitialState(keepPhoneNumberValue = false) {
+    // stop timers
+    stopOtpTimer();
+    isOtpSent = false;
+    // reset UI elements
+    otpSection.classList.add('otp-hidden');
+    otpSection.classList.remove('otp-visible');
+    resendBtn.style.display = 'none';
+    // change primary button text & behavior
+    btnTextSpan.innerText = 'Send OTP';
+    primaryBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span id="btnText">Send OTP</span>';
+    // Reset OTP input value
+    otpCodeInput.value = '';
+    // clear OTP related vars
+    generatedOtp = '';
+    if (!keepPhoneNumberValue) {
+      // optionally but preserve phone if needed (keep)
+    }
+    // clear any residual message after some time
+    if (statusDiv.innerHTML.includes('success') || statusDiv.innerHTML.includes('expired')) {
+      setTimeout(() => {
+        if (!isOtpSent) statusDiv.innerHTML = '';
+      }, 1500);
+    }
+    // re-enable primary button
+    primaryBtn.disabled = false;
+    // extra: remove timer display text reset
+    if (countdownSpan) countdownSpan.innerText = 'Code expires in 60s';
+  }
+  
+  // Switch to OTP verification mode after OTP is sent
+  function switchToOtpMode() {
+    isOtpSent = true;
+    // show OTP section
+    otpSection.classList.remove('otp-hidden');
+    otpSection.classList.add('otp-visible');
+    resendBtn.style.display = 'flex';
+    // Change primary button to "Verify OTP"
+    btnTextSpan.innerText = 'Verify OTP';
+    primaryBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="btnText">Verify OTP</span>';
+    // Clear any previous OTP input
+    otpCodeInput.value = '';
+    otpCodeInput.focus();
+    // start timer for OTP (60 seconds)
+    startOtpTimer(60);
+  }
+  
+  // Main action: Send OTP or Verify OTP depending on state
+  async function onPrimaryAction() {
+    if (!isOtpSent) {
+      // ----- SEND OTP flow -----
+      const phoneNumber = phoneInput.value.trim();
+      if (!phoneNumber) {
+        showMessage('Please enter your phone number.', 'error');
+        phoneInput.focus();
+        return;
+      }
+      // simple client side validation digits length
+      const digits = phoneNumber.replace(/\D/g, '');
+      if (digits.length < 9) {
+        showMessage('Please enter a valid phone number with at least 9 digits.', 'error');
+        return;
+      }
+      // disable button during send to avoid double submission
+      primaryBtn.disabled = true;
+      const success = await sendOtpToPhone(phoneNumber);
+      primaryBtn.disabled = false;
+      if (success) {
+        // Move to OTP verification mode
+        switchToOtpMode();
+        // update global generatedOtp already set in sendOtpToPhone
+      } else {
+        // error message already shown
+      }
+    } else {
+      // ----- VERIFY OTP flow -----
+      const enteredOtp = otpCodeInput.value.trim();
+      if (!enteredOtp) {
+        showMessage('Please enter the 6-digit OTP sent to your phone.', 'error');
+        otpCodeInput.focus();
+        return;
+      }
+      if (enteredOtp.length < 4) {
+        showMessage('OTP should be at least 4 digits (demo: 123456).', 'error');
+        return;
+      }
+      verifyOtp(enteredOtp);
+    }
+  }
+  
+  // Resend OTP functionality: only visible after OTP mode
+  async function onResendOtp() {
+    if (!isOtpSent) {
+      // not expected but hide
+      return;
+    }
+    // Use the previously stored phone number, but we can also re-capture current phone field value
+    let phoneForResend = currentPhoneNumber;
+    if (!phoneForResend) {
+      phoneForResend = phoneInput.value.trim();
+      if (!phoneForResend) {
+        showMessage('Phone number missing, please re-enter.', 'error');
+        resetToInitialState(false);
+        return;
+      }
+    }
+    // validate again
+    const digits = phoneForResend.replace(/\D/g, '');
+    if (digits.length < 9) {
+      showMessage('Invalid phone number for resend.', 'error');
+      return;
+    }
+    // Disable resend button briefly to avoid spamming
+    resendBtn.disabled = true;
+    showMessage(`Resending OTP to ${phoneForResend}...`, 'info');
+    // simulate API call
+    await new Promise(r => setTimeout(r, 700));
+    const newOtp = generateMockOtp(); // same 123456 but fresh acknowledgement
+    generatedOtp = newOtp;
+    currentPhoneNumber = phoneForResend;
+    showMessage(`New OTP sent to ${phoneForResend}. Demo OTP: ${newOtp}`, 'success');
+    // Reset timer and restart
+    stopOtpTimer();
+    startOtpTimer(60);
+    // Clear OTP input field for fresh entry
+    otpCodeInput.value = '';
+    otpCodeInput.focus();
+    resendBtn.disabled = false;
+    // If primary button was disabled, re-enable
+    primaryBtn.disabled = false;
+  }
+  
+  // Event binding
+  primaryBtn.addEventListener('click', onPrimaryAction);
+  resendBtn.addEventListener('click', onResendOtp);
+  
+  // optional: pressing Enter in phone input triggers send OTP, pressing Enter in OTP input triggers verify
+  phoneInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !isOtpSent) {
+      e.preventDefault();
+      onPrimaryAction();
+    }
+  });
+  otpCodeInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && isOtpSent) {
+      e.preventDefault();
+      onPrimaryAction();
+    }
+  });
+  
+  // phone number formatting: optional simple cosmetic
+  phoneInput.addEventListener('input', function(e) {
+    // just avoid starting with spaces, but no forced formatting to stay simple
+    let val = this.value.replace(/[^0-9+\(\)\-\s]/g, '');
+    this.value = val;
+  });
+  
+  // initial demo hint (ensure no residual timer)
+  resetToInitialState(false);
+</script>
+</body>
+</html>
